@@ -3,11 +3,24 @@
 #include <stdlib.h>
 #include <glut.h>
 
-int screenWidth = 1000;
-int screenHeight = 1000;
+
 
 #define GLUT_KEY_ESCAPE 27
 #define DEG2RAD(a) (a * 0.0174532925)
+
+// Window Global Variables
+int screenWidth = 1000;
+int screenHeight = 1000;
+
+float groundLength = 10.0f;
+float groundWidth = 10.0f;
+
+// Camera Global Variables
+int lastMouseX, lastMouseZ;
+bool isLeftMouseButtonPressed, isRightMouseButtonPressed = false;
+
+
+
 
 class Vector3f {
 public:
@@ -48,7 +61,7 @@ class Camera {
 public:
     Vector3f eye, center, up;
 
-    Camera(float eyeX = 3.0f, float eyeY = 3.0f, float eyeZ = 3.0f, float centerX = 0.0f, float centerY = 0.0f, float centerZ = 0.0f, float upX = 0.0f, float upY = 1.0f, float upZ = 0.0f) {
+    Camera(float eyeX = groundWidth / 2 , float eyeY = 3.0f, float eyeZ = 1.2 * groundWidth, float centerX = groundWidth / 2, float centerY = 0.0f, float centerZ = groundLength / 2, float upX = 0.0f, float upY = 1.0f, float upZ = 0.0f) {
         eye = Vector3f(eyeX, eyeY, eyeZ);
         center = Vector3f(centerX, centerY, centerZ);
         up = Vector3f(upX, upY, upZ);
@@ -87,6 +100,30 @@ public:
         center = eye + view;
     }
 
+    void rotateZ(float a) {
+        Vector3f view = (center - eye).unit();
+        Vector3f right = up.cross(view).unit();
+
+        // Rotate the view and right vectors around the Z-axis
+        float cosA = cos(DEG2RAD(a));
+        float sinA = sin(DEG2RAD(a));
+
+        // Update view and right vectors for Z-axis rotation
+        float newViewX = cosA * view.x - sinA * view.y;
+        float newViewY = sinA * view.x + cosA * view.y;
+        float newRightX = cosA * right.x - sinA * right.y;
+        float newRightY = sinA * right.x + cosA * right.y;
+
+        view.x = newViewX;
+        view.y = newViewY;
+        right.x = newRightX;
+        right.y = newRightY;
+
+        // Recalculate the center point based on the rotated view vector
+        center = eye + view;
+    }
+
+
     void look() {
         gluLookAt(
             eye.x, eye.y, eye.z,
@@ -109,8 +146,8 @@ void drawWall(double thickness) {
     glColor4f(0.0f, 1.0f, 0.0f, 0.5f);  // RGBA, where A is the alpha value
 
     // Transform the wall
-    glTranslated(0.5, 0.5 * thickness, 0.5);
-    glScaled(10.0, thickness, 10.0);
+    glTranslated(10.0 / 2, 0, 10.0/ 2);
+    glScaled(groundLength, thickness, groundWidth);
 
     // Draw the wall (as a solid cube)
     glutSolidCube(1);
@@ -125,27 +162,29 @@ void drawWall(double thickness) {
 void drawGridlines() {
     glPushMatrix();
 
+	float y_coord_of_gridlines = 0.0f;  // Y-coordinate of the grid lines
+
     glLineWidth(10.0f);  // Adjust the line width here
 
     // Draw X-axis (Red)
     glColor3f(1.0f, 0.0f, 0.0f); // Red color
     glBegin(GL_LINES);
-    glVertex3f(0.0f, 0.0f, 0.0f);  // Start at the origin
-    glVertex3f(10.0f, 0.0f, 0.0f);  // End point along the X-axis
+    glVertex3f(0.0f, y_coord_of_gridlines, 0.0f);  // Start at the origin
+    glVertex3f(10.0f, y_coord_of_gridlines, 0.0f);  // End point along the X-axis
     glEnd();
 
     // Draw Y-axis (Yellow)
     glColor3f(1.0f, 1.0f, 0.0f); // Yellow color
     glBegin(GL_LINES);
-    glVertex3f(0.0f, 0.0f, 0.0f);  // Start at the origin
+    glVertex3f(0.0f, y_coord_of_gridlines, 0.0f);  // Start at the origin
     glVertex3f(0.0f, 10.0f, 0.0f);  // End point along the Y-axis
     glEnd();
 
     // Draw Z-axis (Blue)
     glColor3f(0.0f, 0.0f, 1.0f); // Blue color
     glBegin(GL_LINES);
-    glVertex3f(0.0f, 0.0f, 0.0f);  // Start at the origin
-    glVertex3f(0.0f, 0.0f, 10.0f);  // End point along the Z-axis
+    glVertex3f(0.0f, y_coord_of_gridlines, 0.0f);  // Start at the origin
+    glVertex3f(0.0f, y_coord_of_gridlines, 10.0f);  // End point along the Z-axis
     glEnd();
 
     glPopMatrix();
@@ -261,7 +300,7 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     drawWalls();
-	drawPlayer(0.1, 0.1, 0.1);
+	drawPlayer(groundWidth / 2, 0, groundLength / 2);
 	drawGridlines();
 
     //// Adjust the camera to follow the skier if not in free-cam mode
@@ -325,12 +364,69 @@ void Special(int key, int x, int y) {
     glutPostRedisplay();
 }
 
+// Mouse event handlers
+void Mouse(int button, int state, int x, int z) {
+    if (button == GLUT_LEFT_BUTTON) {
+        if (state == GLUT_DOWN) {
+            lastMouseX = x;
+            lastMouseZ = z;
+            isLeftMouseButtonPressed = true;
+        }
+        else {
+            isLeftMouseButtonPressed = false;
+        }
+    }
+    if (button == GLUT_RIGHT_BUTTON) {
+        if (state == GLUT_DOWN) {
+            lastMouseX = x;
+            lastMouseZ = z;
+            isRightMouseButtonPressed = true;
+        }
+        else {
+            isRightMouseButtonPressed = false;
+        }
+    }
+}
+
+void MouseMotion(int x, int z) {
+    if (isLeftMouseButtonPressed) {
+        int deltaX = x - lastMouseX;
+        int deltaZ = z - lastMouseZ;
+
+        // Update camera position based on mouse movement
+        camera.moveX(deltaX * 0.01);
+        camera.moveZ(-deltaZ * 0.01);
+
+        lastMouseX = x;
+        lastMouseZ = z;
+    }
+    if (isRightMouseButtonPressed) {
+        int deltaX = x - lastMouseX;
+        int deltaZ = z - lastMouseZ;
+
+		float rotationSpeed = 0.05;
+
+        // Update camera position based on mouse movement
+        camera.rotateY(deltaX * rotationSpeed);
+        camera.rotateX(deltaZ * rotationSpeed);
+
+        lastMouseX = x;
+        lastMouseZ = z;
+
+    }
+    glutPostRedisplay();
+}
+
 void main(int argc, char** argv) {
     glutInit(&argc, argv);
 
     glutInitWindowSize(screenWidth, screenHeight);
     glutCreateWindow("Golfito");
     glutDisplayFunc(Display);
+
+    glutMouseFunc(Mouse);
+    glutMotionFunc(MouseMotion);
+
     glutKeyboardFunc(Keyboard);
     glutSpecialFunc(Special);
 
