@@ -2,9 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <glut.h>
 #include <cmath>
 #include <vector>
+#include <random>
+#include <glut.h>
 
 
 
@@ -18,6 +19,24 @@ int screenHeight = 1000;
 
 float groundLength = 10.0f;
 float groundWidth = 10.0f;
+
+
+// Animation Global Variables
+float ballColors[3] = { 0.0f, 0.0f, 0.0f };  // Ball Color
+
+float sandPitRotationAngle = 0.0f;  // Speed of the sand pit rotation
+
+float rockHeight = 0.0f;  // Height of the rock
+bool isRockJumping = true;  // Flag to indicate if the rock is jumping
+
+float flagpoleRotationAngle = 0.0f;  // Speed of the rock jump
+
+float houseScaleFactor = 0.6f;
+float isHouseScalingUp = false;  // Flag to indicate if the house is scaling up
+
+float carColor[3] = {1.0f, 0.0f, 0.0f};
+int colorChangingCycle = 100;
+
 
 // Camera Global Variables
 int lastMouseX, lastMouseZ;
@@ -36,8 +55,7 @@ float playerAngle = 0.0f;
 // Golf Balls Global Variables
 
 
-// Ball Color
-float ballColor[3] = { 1.0f, 1.0f, 1.0f };  // White color for the golf ball
+
 
 // Struct to represent a Ball
 struct Ball {
@@ -63,7 +81,7 @@ struct Ball {
             // Drawing the Golf Ball (Solid Sphere)
             glPushMatrix();
             glTranslatef(0.0f, -0.075f, 0.0f);
-            glColor3f(1.0f, 1.0f, 1.0f);  // White color for the golf ball
+            glColor3f(ballColors[0], ballColors[1], ballColors[2]);  // White color for the golf ball
             glutSolidSphere(0.1f, 20, 20);  // Sphere representing the golf ball
             glPopMatrix();
 
@@ -82,7 +100,7 @@ struct Ball {
             // Rotate the cone to point downwards
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);  // Rotate the cone 180 degrees around the X-axis
 
-            glColor3f(0.6f, 0.3f, 0.0f);  // Brown color for the tee
+            glColor3f(houseScaleFactor, 0.3f, 0.0f);  // Brown color for the tee
             glutSolidCone(0.05f, 0.1f, 10, 10);  // Small cone representing the tee
             glPopMatrix();
 
@@ -551,7 +569,7 @@ void drawClubHouse(float x, float y, float z) {
     // Move the entire clubhouse to the specified position (x, y, z)
     glPushMatrix();
 
-    glScalef(0.6f, 0.6f, 0.6f);  // Scaling factor to reduce size
+    glScalef(houseScaleFactor, houseScaleFactor, houseScaleFactor);  // Scaling factor to reduce size
     glTranslatef(x, y, z);  // Position the clubhouse
 
     // 1. Draw the walls of the clubhouse (a large cube representing the building)
@@ -621,7 +639,7 @@ void drawGolfCart(float x, float y, float z) {
     // 1. Draw the cart body (a rectangular shape for the cart)
     glPushMatrix();
     glTranslatef(0.0f, 0.3f, 0.0f);  // Position the body slightly above the ground
-    glColor3f(1.0f, 0.0f, 0.0f);  // Green color for the cart body
+    glColor3f(carColor[0], carColor[1], carColor[2]);  // Green color for the cart body
     glScalef(2.0f, 0.5f, 1.0f);  // Scale to make a long, flat body
     glutSolidCube(1.0f);  // Cube representing the body of the cart
     glPopMatrix();
@@ -721,6 +739,7 @@ void drawFlagPole(float x, float y, float z) {
     // Move the entire flagpole to the specified position (x, y, z)
     glPushMatrix();
     glTranslatef(x, y, z);  // Position the flagpole
+    glRotatef(flagpoleRotationAngle, 0.0f, 1.0f, 0.0f);
 
     // 1. Draw the base of the flagpole (a short cylinder)
     glPushMatrix();
@@ -764,6 +783,7 @@ void drawSandpit(float x, float y, float z) {
     // Move the entire sandpit to the specified position (x, y, z)
     glPushMatrix();
     glTranslatef(x, y, z);  // Position the sandpit
+    glRotatef(sandPitRotationAngle, 0.0f, 1.0f, 0.0f);
     glScalef(0.3f, 0.3f, 0.3f);  // Scaling factor to reduce size
 
     // 1. Draw the base of the sandpit (a short cylinder)
@@ -1051,10 +1071,10 @@ void Display() {
         drawSandpit(9.0f, 0.0f, 9.0f);
 
         // Rock Groups
-        drawRockGroup(1.0f, 0.0f, 6.0f);
-        drawRockGroup(2.0f, 0.0f, 9.0f);
-        drawRockGroup(9.0f, 0.0f, 6.0f);
-        drawRockGroup(6.0f, 0.0f, 9.5f);
+        drawRockGroup(1.0f, rockHeight, 6.0f);
+        drawRockGroup(2.0f, rockHeight, 9.0f);
+        drawRockGroup(9.0f, rockHeight, 6.0f);
+        drawRockGroup(6.0f, rockHeight, 9.5f);
 
 
         drawGridlines();
@@ -1228,9 +1248,137 @@ void initGame() {
 	createAllBalls();
 	initialBallsCount = balls.size();
     ballsLeftCount = balls.size();
-	timeLeft = 100.0f;
+	timeLeft = 60.0f;
 
     glutTimerFunc(16, updateTimer, 0);  // Start the timer update
+}
+
+void animateGolfBalls() {
+    float colorChangeSpeed = 0.001f;  // Speed of the color transition (lower is slower)
+
+    // Increment all colors simultaneously
+    ballColors[0] += colorChangeSpeed;  // Red
+    ballColors[1] += colorChangeSpeed;  // Green
+    ballColors[2] += colorChangeSpeed;  // Blue
+
+    // Ensure the values are within the valid range (0.0f to 1.0f)
+    if (ballColors[0] > 1.0f) ballColors[0] = 1.0f;
+    if (ballColors[1] > 1.0f) ballColors[1] = 1.0f;
+    if (ballColors[2] > 1.0f) ballColors[2] = 1.0f;
+
+    // Reset when all colors reach 1.0f
+    if (ballColors[0] == 1.0f && ballColors[1] == 1.0f && ballColors[2] == 1.0f) {
+        // Reset colors to red
+        ballColors[0] = 1.0f;
+        ballColors[1] = 0.0f;
+        ballColors[2] = 0.0f;
+    }
+}
+
+void sandpitRotate() {
+
+	float sandPitRotationSpeed = 0.5f;  // Speed of the rotation in degrees
+    
+	sandPitRotationAngle += sandPitRotationSpeed;
+	// Keep the angle within the range [0, 360)
+	if (sandPitRotationAngle >= 360.0f) {
+		sandPitRotationAngle -= 360.0f;
+	}
+}
+
+void rockJumping() {
+	float rockJumpMaxHeight = 0.3f;  // Height of the rock jump
+	float rockJumpMinHeight = 0.05f;  // Speed of the rock jump
+    float rockJumpSpeed = 0.003;
+
+    if (isRockJumping) {
+		rockHeight += rockJumpSpeed;
+
+		if (rockHeight >= rockJumpMaxHeight) {
+			isRockJumping = false;
+		}
+	}
+	else {
+		rockHeight -= rockJumpSpeed;
+
+		if (rockHeight <= rockJumpMinHeight) {
+			isRockJumping = true;
+		}
+    }
+
+}
+
+void flagpoleRotate() {
+    float flagpoleRotationSpeed = 0.5f;  // Speed of the rotation in degrees
+
+    flagpoleRotationAngle += flagpoleRotationSpeed;
+    // Keep the angle within the range [0, 360)
+    if (flagpoleRotationAngle >= 360.0f) {
+        flagpoleRotationAngle -= 360.0f;
+    }
+}
+
+void houseScale() {
+	float minHouseScaleFactor = 0.5f;
+    float maxHouseScaleFactor = 0.6f;
+	float houseScaleSpeed = 0.0005f;  // Speed of the scaling
+
+	if (isHouseScalingUp) {
+		houseScaleFactor += houseScaleSpeed;
+
+		if (houseScaleFactor >= maxHouseScaleFactor) {
+			isHouseScalingUp = false;
+		}
+	}
+	else {
+		houseScaleFactor -= houseScaleSpeed;
+
+		if (houseScaleFactor <= minHouseScaleFactor) {
+			isHouseScalingUp = true;
+		}
+	}
+}
+
+void carChangeColors() {
+
+    if (colorChangingCycle == 0) {
+        // Create a random engine and distribution for float between 0.0f and 1.0f
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+
+        // Generate random RGB values
+        float red = dis(gen);
+        float green = dis(gen);
+        float blue = dis(gen);
+
+        // Assign to the car's color
+        carColor[0] = red;
+        carColor[1] = green;
+        carColor[2] = blue;
+
+        colorChangingCycle = 100;
+    }
+    else {
+		colorChangingCycle--;
+    }
+}
+
+
+void Animate() {
+
+    animateGolfBalls();
+
+    // 5 animations
+    sandpitRotate();
+    rockJumping();
+    flagpoleRotate();
+    houseScale();
+    carChangeColors();
+
+
+	glutPostRedisplay();
+
 }
 
 void main(int argc, char** argv) {
@@ -1238,6 +1386,9 @@ void main(int argc, char** argv) {
 
     glutInitWindowSize(screenWidth, screenHeight);
     glutCreateWindow("Golfito");
+
+    glutIdleFunc(Animate);
+
     glutDisplayFunc(Display);
 
     glutMouseFunc(Mouse);
