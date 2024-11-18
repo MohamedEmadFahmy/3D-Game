@@ -478,6 +478,32 @@ void drawPlayer() {
     glutSolidSphere(0.2, 20, 20);
     glPopMatrix();
 
+    // Hair (10 cylinders above the head)
+    float angleStep = 360.0f / 10;  // Angle step to evenly space the cylinders around the head
+    float heightOffset = 0.2f;  // Reduced height of the hair (closer to the head)
+    float radius = 0.18f;  // Reduced radius for the cylinders to be closer together
+
+    for (int i = 0; i < 15; i++) {
+        glPushMatrix();
+
+        // Calculate the position for each hair cylinder
+        float angle = i * angleStep;
+        float x = radius * cosf(angle);  // Convert angle to radians
+        float z = radius * sinf(angle);  // Convert angle to radians
+        float y = 1.3f + heightOffset;  // Set the height just above the head (slightly lower)
+
+        glTranslatef(x, y, z);  // Position the cylinder in 3D space
+        glRotatef(270.0f, 1.0f, 0.0f, 0.0f);  // Rotate to make it upright
+
+        glColor3f(1.0f, 0.84f, 0.0f);  // Hair color (black for example)
+
+        // Create the cylinder (using glutSolidCone for a similar effect, or use actual cylinder if available)
+        glutSolidCone(0.05f, 0.15f, 10, 10);  // Reduced height of the cone to make it shorter
+
+        glPopMatrix();
+    }
+
+
     // Eyes (Two small spheres for the eyes)
     glPushMatrix();
     glTranslatef(0.0f, 1.4f, -0.2f);  // Position the eyes slightly above the center of the face
@@ -805,7 +831,7 @@ void drawSandpit(float x, float y, float z) {
     
 
     // Oval pebbles with more spaced-out positions
-    float positions[10][2] = {
+    float positions[15][2] = {
         {-1.0f, -1.0f},
         {1.2f, 0.8f},
         {-1.5f, 1.3f},
@@ -815,10 +841,16 @@ void drawSandpit(float x, float y, float z) {
         {-0.8f, 1.5f},
         {0.3f, 1.8f},
         {1.7f, 1.2f},
-        {-1.2f, -1.8f}
+        {-1.2f, -1.8f},
+        {-0.5f, -2.0f},  
+        {1.8f, -0.3f},   
+        {-1.6f, 1.7f},  
+        {0.5f, 2.1f},    
+        {1.0f, -1.6f}    
     };
 
-    for (int i = 0; i < 10; i++) {
+
+    for (int i = 0; i < 15; i++) {
         glPushMatrix();
         glTranslatef(positions[i][0], 0.4f, positions[i][1]);
         glScalef(1.5f, 0.5f, 1.0f);  // Non-uniform scaling to create oval shapes
@@ -1236,7 +1268,7 @@ void MouseMotion(int x, int z) {
 
 void updateTimer(int value) {
     if (timeLeft > 0) {
-        timeLeft -= 0.016f;  // Decrease time by 0.016 seconds (16 ms)
+        timeLeft -= 0.0266f;  // Decrease time by 0.016 seconds (16 ms)
     }
     else {
         timeLeft = 0.0f;  // Time has run out
