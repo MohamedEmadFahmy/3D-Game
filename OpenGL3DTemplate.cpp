@@ -22,6 +22,8 @@ float groundWidth = 10.0f;
 
 
 // Animation Global Variables
+bool isAnimationsOn = false;
+
 float ballColors[3] = { 0.0f, 0.0f, 0.0f };  // Ball Color
 
 float sandPitRotationAngle = 0.0f;  // Speed of the sand pit rotation
@@ -36,6 +38,9 @@ float isHouseScalingUp = false;  // Flag to indicate if the house is scaling up
 
 float carColor[3] = {1.0f, 0.0f, 0.0f};
 int colorChangingCycle = 100;
+
+float fenceColor[3] = { 0.6f, 0.4f, 0.2f };
+int fenceColorChangingCycle = 1000;
 
 
 // Camera Global Variables
@@ -118,9 +123,6 @@ std::vector<Ball> balls;
 int initialBallsCount;
 int ballsLeftCount;
 float timeLeft;  // Time in seconds
-
-
-
 
 
 
@@ -416,7 +418,7 @@ void drawFenceSegment(float xStart, float y, float zStart, float length, bool ho
 
     GLUquadric* quad = gluNewQuadric();  // Create a quadric object for cylinders
 
-    glColor3f(0.6f, 0.4f, 0.2f);  // Brown for wooden fences
+    glColor3f(fenceColor[0], fenceColor[1], fenceColor[2]);  // Brown for wooden fences
 
     // Draw vertical posts
     for (int i = 0; i < numPosts; i++) {
@@ -972,7 +974,7 @@ void displayGameWon() {
     glLoadIdentity();        // Reset the modelview matrix
 
     // Render "GAME WON" text in the center of the screen
-    const char* wonMessage = "GAME WON!";
+    const char* wonMessage = "GAME WIN!";
     float textWidth = 0.0f;
     for (const char* c = wonMessage; *c != '\0'; c++) {
         textWidth += glutBitmapWidth(GLUT_BITMAP_HELVETICA_18, *c);
@@ -1019,7 +1021,7 @@ void displayGameOver() {
     glLoadIdentity();        // Reset the modelview matrix
 
     // Render "GAME OVER" text in the center of the screen
-    const char* gameOverMessage = "GAME OVER";
+    const char* gameOverMessage = "GAME LOSE";
     float textWidth = 0.0f;
     for (const char* c = gameOverMessage; *c != '\0'; c++) {
         textWidth += glutBitmapWidth(GLUT_BITMAP_HELVETICA_18, *c);
@@ -1077,7 +1079,7 @@ void Display() {
         drawRockGroup(6.0f, rockHeight, 9.5f);
 
 
-        drawGridlines();
+        //drawGridlines();
 
         drawPlayer();
         updateCamera();
@@ -1156,9 +1158,10 @@ void Keyboard(unsigned char key, int x, int y) {
     case 'c':
         camera.toggleView();  // Toggle camera view
         break;
+    case 'v':
+		isAnimationsOn = !isAnimationsOn;  // Toggle animations
+		break;
     }
-
-    //glutPostRedisplay();
 }
 
 void Special(int key, int x, int y) {
@@ -1233,7 +1236,7 @@ void MouseMotion(int x, int z) {
 
 void updateTimer(int value) {
     if (timeLeft > 0) {
-        timeLeft -= 0.1f;  // Decrease time by 0.1 seconds
+        timeLeft -= 0.016f;  // Decrease time by 0.016 seconds (16 ms)
     }
     else {
         timeLeft = 0.0f;  // Time has run out
@@ -1241,7 +1244,7 @@ void updateTimer(int value) {
 
     // Redisplay the window
     glutPostRedisplay();
-    glutTimerFunc(16, updateTimer, 0);  // Call this function every 100 ms
+    glutTimerFunc(16, updateTimer, 0);  // Call this function every 16 ms
 }
 
 void initGame() {
@@ -1364,18 +1367,44 @@ void carChangeColors() {
     }
 }
 
+void fenceChangeColors() {
+    if (fenceColorChangingCycle == 0) {
+        // Create a random engine and distribution for float between 0.0f and 1.0f
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+
+        // Generate random RGB values
+        float red = dis(gen);
+        float green = dis(gen);
+        float blue = dis(gen);
+
+        // Assign to the car's color
+        fenceColor[0] = red;
+        fenceColor[1] = green;
+        fenceColor[2] = blue;
+
+        fenceColorChangingCycle = 1000;
+    }
+    else {
+        fenceColorChangingCycle--;
+    }
+}
 
 void Animate() {
 
+
     animateGolfBalls();
+    fenceChangeColors();
 
-    // 5 animations
-    sandpitRotate();
-    rockJumping();
-    flagpoleRotate();
-    houseScale();
-    carChangeColors();
-
+    if (isAnimationsOn) {
+        // 5 animations
+        sandpitRotate();
+        rockJumping();
+        flagpoleRotate();
+        houseScale();
+        carChangeColors();
+    }
 
 	glutPostRedisplay();
 
