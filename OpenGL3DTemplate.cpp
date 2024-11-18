@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <glut.h>
 
 
@@ -18,6 +19,12 @@ float groundWidth = 10.0f;
 // Camera Global Variables
 int lastMouseX, lastMouseZ;
 bool isLeftMouseButtonPressed, isRightMouseButtonPressed = false;
+
+
+// Player Global Variables
+float playerX = groundLength / 2;
+float playerZ = groundWidth / 2;
+float playerY = 0;
 
 
 
@@ -60,12 +67,16 @@ public:
 class Camera {
 public:
     Vector3f eye, center, up;
+	std::string view;
 
-    Camera(float eyeX = groundWidth / 2 , float eyeY = 3.0f, float eyeZ = 1.2 * groundWidth, float centerX = groundWidth / 2, float centerY = 0.0f, float centerZ = groundLength / 2, float upX = 0.0f, float upY = 1.0f, float upZ = 0.0f) {
-        eye = Vector3f(eyeX, eyeY, eyeZ);
-        center = Vector3f(centerX, centerY, centerZ);
-        up = Vector3f(upX, upY, upZ);
+    Camera() {
+        view = "front";  // Default view
+
+        eye = Vector3f(groundLength / 2, 3.0f, 2.0f * groundWidth);  // Initial eye position
+        center = Vector3f(groundLength / 2, 0.0f, groundWidth / 2);  // Look at the center of the ground
+        up = Vector3f(0.0f, 1.0f, 0.0f);  // Up vector pointing in the Y direction
     }
+
 
     void moveX(float d) {
         Vector3f right = up.cross(center - eye).unit();
@@ -123,7 +134,6 @@ public:
         center = eye + view;
     }
 
-
     void look() {
         gluLookAt(
             eye.x, eye.y, eye.z,
@@ -131,6 +141,30 @@ public:
             up.x, up.y, up.z
         );
     }
+
+	void toggleView() {
+		if (view == "front") {
+			view = "side";
+
+            eye = Vector3f(-2.0 * groundLength / 2, 3.0f, groundWidth / 2);
+            center = Vector3f(groundLength / 2, 0.0f, groundWidth / 2);
+            up = Vector3f(0.0f, 1.0f, 0.0f);
+		}
+		else if (view == "side") {
+			view = "top";
+
+            eye = Vector3f(groundLength / 2, 10.0f, groundWidth / 2);
+            center = Vector3f(groundLength / 2, 0.0f, groundWidth / 2);
+            up = Vector3f(0.0f, 0.0f, -1.0f);
+		}
+        else if (view == "top") {
+			view = "front";
+
+            eye = Vector3f(groundLength / 2, 3.0f, 2.0f * groundWidth);
+            center = Vector3f(groundLength / 2, 0.0f, groundWidth / 2);
+            up = Vector3f(0.0f, 1.0f, 0.0f);
+		}
+	}
 };
 
 Camera camera;
@@ -190,8 +224,6 @@ void drawGridlines() {
     glPopMatrix();
 }
 
-
-
 void drawWalls() {
     drawWall(0.01);
 
@@ -233,17 +265,24 @@ void setupCamera() {
 }
 
 void drawPlayer(float x, float y, float z) {
+    glPushMatrix();
+
+    // Translate to player's position
+    glTranslated(x, y, z);
+
+    // Rotate the player 180 degrees around the Y-axis to face away
+    glRotated(180, 0, 1, 0);
 
     // Head (Sphere)
     glPushMatrix();
-    glTranslated(x, y + 0.9, z); // Position for the head relative to the center
+    glTranslated(0, 0.9, 0); // Position for the head relative to the center
     glColor3f(1.0, 0.8, 0.6);
     glutSolidSphere(0.1, 20, 20);
     glPopMatrix();
 
     // Scarf (Cylinder)
     glPushMatrix();
-    glTranslated(x, y + 0.9, z); // Position around the neck relative to the center
+    glTranslated(0, 0.9, 0); // Position around the neck
     glRotated(90, 1, 0, 0); // Rotate to align with the neck
     glColor3f(1.0, 0.0, 0.0);
     GLUquadric* quad = gluNewQuadric();
@@ -252,8 +291,7 @@ void drawPlayer(float x, float y, float z) {
 
     // Body (Cuboid)
     glPushMatrix();
-    glTranslated(x, y + 0.6, z); // Center position for the body
-    //glColor3f(0.0, 0.6, 1);
+    glTranslated(0, 0.6, 0); // Center position for the body
     glColor3f(0.2, 0.2, 0.25);
     glScaled(0.2, 0.4, 0.1); // Scale to form a cuboid shape
     glutSolidCube(1.0);
@@ -261,37 +299,37 @@ void drawPlayer(float x, float y, float z) {
 
     // Left Arm (Cylinder)
     glPushMatrix();
-    glTranslated(x - 0.11, y + 0.8, z); // Position for the left arm relative to the center
-    //glRotated(-30, 0, 0, 1); // Rotate slightly to show a natural bend
-    //glColor3f(0.2, 0.5, 1);
+    glTranslated(-0.11, 0.8, 0); // Position for the left arm
     glRotated(70, 1, 0, 0); // Rotate slightly to show a natural bend
     gluCylinder(quad, 0.02, 0.02, 0.3, 20, 20); // Cylinder for the left arm
     glPopMatrix();
 
     // Right Arm (Cylinder)
     glPushMatrix();
-    glTranslated(x + 0.11, y + 0.8, z); // Position for the right arm relative to the center
-    //glRotated(-30, 0, 0, 1); // Rotate slightly to show a natural bend
+    glTranslated(0.11, 0.8, 0); // Position for the right arm
     glRotated(70, 1, 0, 0); // Rotate slightly to show a natural bend
     gluCylinder(quad, 0.02, 0.02, 0.3, 20, 20); // Cylinder for the right arm
     glPopMatrix();
 
     // Left Leg (Cylinder)
     glPushMatrix();
-    glTranslated(x - 0.05, y + 0.4, z); // Position for the left leg relative to the center
+    glTranslated(-0.05, 0.4, 0); // Position for the left leg
     glRotated(110, 1, 0, 0); // Slight rotation for natural stance
     gluCylinder(quad, 0.03, 0.03, 0.4, 20, 20); // Cylinder for the left leg
     glPopMatrix();
 
     // Right Leg (Cylinder)
     glPushMatrix();
-    glTranslated(x + 0.05, y + 0.4, z); // Position for the right leg relative to the center
+    glTranslated(0.05, 0.4, 0); // Position for the right leg
     glRotated(80, 1, 0, 0); // Slight rotation for natural stance
     gluCylinder(quad, 0.03, 0.03, 0.4, 20, 20); // Cylinder for the right leg
     glPopMatrix();
 
     gluDeleteQuadric(quad);
+    glPopMatrix();  // Pop the player matrix
 }
+
+
 
 void Display() {
     setupCamera();
@@ -300,7 +338,7 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     drawWalls();
-	drawPlayer(groundWidth / 2, 0, groundLength / 2);
+	drawPlayer(playerX, playerY, playerZ);
 	drawGridlines();
 
     //// Adjust the camera to follow the skier if not in free-cam mode
@@ -314,51 +352,42 @@ void Display() {
 }
 
 void Keyboard(unsigned char key, int x, int y) {
-    float d = 0.05;
+    float playerSpeed = 0.1;
+
+    //printf("Key %c ", key);
 
     switch (key) {
-    case 'w':
-        camera.moveY(d);
-        break;
-    case 's':
-        camera.moveY(-d);
-        break;
-    case 'a':
-        camera.moveX(d);
-        break;
-    case 'd':
-        camera.moveX(-d);
-        break;
-    case 'q':
-        camera.moveZ(d);
-        break;
-    case 'e':
-        camera.moveZ(-d);
-        break;
-
-    case GLUT_KEY_ESCAPE:
-        exit(EXIT_SUCCESS);
+        case 'w':
+			playerZ -= playerSpeed;
+            break;
+        case 's':
+            playerZ += playerSpeed;
+            break;
+        case 'a':
+            playerX -= playerSpeed;
+            break;
+        case 'd':
+            playerX += playerSpeed;
+            break;
+        case 'c':
+			camera.toggleView();
+			break;
     }
-
     glutPostRedisplay();
 }
 
 void Special(int key, int x, int y) {
-    float a = 1.0;
+    float cameraSpeed = 0.2;
 
     switch (key) {
-    case GLUT_KEY_UP:
-        camera.rotateX(a);
-        break;
-    case GLUT_KEY_DOWN:
-        camera.rotateX(-a);
-        break;
-    case GLUT_KEY_LEFT:
-        camera.rotateY(a);
-        break;
-    case GLUT_KEY_RIGHT:
-        camera.rotateY(-a);
-        break;
+        case GLUT_KEY_UP:
+            camera.moveY(cameraSpeed);  // Move up (increase Y)
+            break;
+        case GLUT_KEY_DOWN:
+            camera.moveY(-cameraSpeed); // Move down (decrease Y)
+            break;
+        case GLUT_KEY_ESCAPE:
+            exit(EXIT_SUCCESS);
     }
 
     glutPostRedisplay();
