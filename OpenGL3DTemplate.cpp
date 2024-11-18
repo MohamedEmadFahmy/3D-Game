@@ -430,72 +430,6 @@ void drawFences(float groundLength, float groundWidth) {
     drawFenceSegment(groundLength, groundLevel, 0, groundWidth, false);
 }
 
-//void drawPlayerAbso(float x, float y, float z) {
-//    glPushMatrix();
-//
-//    // Translate to player's position
-//    glTranslated(x, y, z);
-//
-//    glRotatef(playerAngle, 0, 1, 0);
-//
-//    //// Head (Sphere) - Mirror on the X-axis
-//    //glPushMatrix();
-//    //glTranslated(0, 0.9, 0); // Position for the head relative to the center
-//    //glColor3f(1.0, 0.8, 0.6);
-//    //glutSolidSphere(0.1, 20, 20);
-//    //glPopMatrix();
-//
-//    //// Scarf (Cylinder) - Mirror on the X-axis
-//    //glPushMatrix();
-//    //glTranslated(0, 0.9, 0); // Position around the neck
-//    //glRotated(90, 1, 0, 0); // Rotate to align with the neck
-//    //glColor3f(1.0, 0.0, 0.0);
-//    //GLUquadric* quad = gluNewQuadric();
-//    //gluCylinder(quad, 0.11, 0.11, 0.1, 20, 20); // Cylinder for the scarf
-//    //glPopMatrix();
-//
-//    // Body (Cuboid) - Mirror on the X-axis
-//    glPushMatrix();
-//    glTranslated(0, 0.6, 0); // Center position for the body
-//    glColor3f(0.2, 0.2, 0.25);
-//    glScaled(0.2, 0.4, 0.1); // Scale to form a cuboid shape
-//    glutSolidCube(1.0);
-//    glPopMatrix();
-//
-//    // Left Arm (Cylinder) - Mirror on the X-axis
-//    glPushMatrix();
-//    glTranslated(0.11, 0.8, 0); // Position for the left arm (mirror it to the right)
-//    glRotated(70, 1, 0, 0); // Rotate slightly to show a natural bend
-//    gluCylinder(quad, 0.02, 0.02, 0.3, 20, 20); // Cylinder for the left arm
-//    glPopMatrix();
-//
-//    // Right Arm (Cylinder) - Mirror on the X-axis
-//    glPushMatrix();
-//    glTranslated(-0.11, 0.8, 0); // Position for the right arm (mirror it to the left)
-//    glRotated(70, 1, 0, 0); // Rotate slightly to show a natural bend
-//    gluCylinder(quad, 0.02, 0.02, 0.3, 20, 20); // Cylinder for the right arm
-//    glPopMatrix();
-//
-//    // Left Leg (Cylinder) - Mirror on the X-axis
-//    glPushMatrix();
-//    glTranslated(0.05, 0.4, 0); // Position for the left leg (mirror it to the right)
-//    glRotated(110, 1, 0, 0); // Slight rotation for natural stance
-//    gluCylinder(quad, 0.03, 0.03, 0.4, 20, 20); // Cylinder for the left leg
-//    glPopMatrix();
-//
-//    // Right Leg (Cylinder) - Mirror on the X-axis
-//    glPushMatrix();
-//    glTranslated(-0.05, 0.4, 0); // Position for the right leg (mirror it to the left)
-//    glRotated(80, 1, 0, 0); // Slight rotation for natural stance
-//    gluCylinder(quad, 0.03, 0.03, 0.4, 20, 20); // Cylinder for the right leg
-//    glPopMatrix();
-//
-//    gluDeleteQuadric(quad);
-//
-//
-//    glPopMatrix();  // Pop the player matrix
-//}
-
 void drawPlayer() {
     glPushMatrix();
 
@@ -599,6 +533,56 @@ void drawPlayer() {
     glPopMatrix();
 }
 
+void drawClubHouse(float x, float y, float z) {
+    // Move the entire clubhouse to the specified position (x, y, z)
+    glPushMatrix();
+    glTranslatef(x, y, z);  // Position the clubhouse
+
+    // 1. Draw the walls of the clubhouse (a large cube representing the building)
+    glPushMatrix();
+    glColor3f(0.8f, 0.8f, 0.8f);  // Light gray for the walls
+    glutSolidCube(3.0f);  // Cube representing the building
+    glPopMatrix();
+
+    // 2. Draw the roof of the clubhouse (a cone on top of the walls)
+    glPushMatrix();
+    glTranslatef(0.0f, 1.5f, 0.0f);  // Move up above the walls
+    glColor3f(0.6f, 0.3f, 0.0f);  // Brown color for the roof
+    glutSolidCone(2.0f, 2.5f, 10, 10);  // Cone representing the roof
+    glPopMatrix();
+
+    // 3. Draw the door (a small rectangle in the front)
+    glPushMatrix();
+    glTranslatef(0.0f, -0.5f, 1.6f);  // Position it slightly above the ground and at the center
+    glColor3f(0.5f, 0.25f, 0.0f);  // Dark brown color for the door
+    glutSolidCube(1.0f);  // Cube representing the door
+    glPopMatrix();
+
+    // 4. Draw the windows (two small squares on the sides of the building)
+    glPushMatrix();
+    glTranslatef(-1.5f, 0.5f, 1.6f);  // Left window
+    glColor3f(0.7f, 0.7f, 1.0f);  // Light blue for the window
+    glutSolidCube(0.6f);  // Cube representing the window
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(1.5f, 0.5f, 1.6f);  // Right window
+    glColor3f(0.7f, 0.7f, 1.0f);  // Light blue for the window
+    glutSolidCube(0.6f);  // Cube representing the window
+    glPopMatrix();
+
+    // 5. Draw the chimney (a small cylinder on the roof)
+    glPushMatrix();
+    glTranslatef(0.0f, 2.5f, -1.0f);  // Position the chimney above the roof
+    glColor3f(0.5f, 0.5f, 0.5f);  // Gray color for the chimney
+    drawCylinder(0.3f, 1.0f, 10, 10);  // Cylinder representing the chimney
+    glPopMatrix();
+
+    // Pop the transformation matrix
+    glPopMatrix();
+}
+
+
 void updateCamera() {
     if (camera.view == "third-person") {
         // Continuously update camera position to follow player
@@ -635,19 +619,16 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     drawWalls();
-	drawPlayer();
 	drawFences(groundLength, groundWidth);
-
+	//drawClubHouse(5.0f, 0.0f, 5.0f);
 	drawGridlines();
+
+	drawPlayer();
 	updateCamera();
 
     handleCollisions();
 
 	drawAllBalls();
-
-    /*drawGolfBall(1.0, 1.0);
-
-    drawGolfBall(4.0, 4.0);*/
 
     glFlush();
 }
@@ -656,8 +637,6 @@ void Keyboard(unsigned char key, int x, int y) {
     float playerSpeed = 0.1f;
     float playerAngleSpeed = 40.0f;  // Angle speed in degrees
     float newX, newZ;  // To store the new position for boundary checking
-    float groundLength = 10.0f;  // Replace with your actual ground length
-    float groundWidth = 8.0f;    // Replace with your actual ground width
 
     /*printf("Vector X: %f\n", playerSpeed * cos(DEG2RAD(360.0f - playerAngle)));
     printf("Vector Z: %f\n", playerSpeed * sin(DEG2RAD(360.0f - playerAngle)));*/
@@ -671,13 +650,11 @@ void Keyboard(unsigned char key, int x, int y) {
         printf("New X: %f\n", newX);
 		printf("New Z: %f\n", newZ);
 
-            playerX = roundTo10DecimalPlaces(newX);
-            playerZ = roundTo10DecimalPlaces(newZ);
-
-            /*playerX = newX;
-			playerZ = newZ;*/
         // Check boundaries before updating position
         if (newX >= 0 && newX <= groundLength && newZ >= 0 && newZ <= groundWidth) {
+
+            playerX = roundTo10DecimalPlaces(newX);
+            playerZ = roundTo10DecimalPlaces(newZ);
         }
         break;
 
@@ -689,13 +666,10 @@ void Keyboard(unsigned char key, int x, int y) {
         printf("New X: %f\n", newX);
         printf("New Z: %f\n", newZ);
 
+        // Check boundaries before updating position
+        if (newX >= 0 && newX <= groundLength && newZ >= 0 && newZ <= groundWidth){
             playerX = roundTo10DecimalPlaces(newX);
             playerZ = roundTo10DecimalPlaces(newZ);
-
-            /*playerX = newX;
-            playerZ = newZ;*/
-        // Check boundaries before updating position
-        if (newX >= 0 && newX <= groundLength && newZ >= 0 && newZ <= groundWidth) {
         }
         break;
 
