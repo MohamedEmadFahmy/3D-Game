@@ -19,6 +19,8 @@ float groundWidth = 10.0f;
 // Camera Global Variables
 int lastMouseX, lastMouseZ;
 bool isLeftMouseButtonPressed, isRightMouseButtonPressed = false;
+float thirdPersonCameraHeightOffset = 1.5f;
+float thirdPersonCameraDistanceOffset = 3.0f;
 
 
 // Player Global Variables
@@ -142,29 +144,42 @@ public:
         );
     }
 
-	void toggleView() {
-		if (view == "front") {
-			view = "side";
+    void toggleView() {
+        if (view == "front") {
+            view = "side";
 
+
+            // Side View
             eye = Vector3f(-2.0 * groundLength / 2, 3.0f, groundWidth / 2);
             center = Vector3f(groundLength / 2, 0.0f, groundWidth / 2);
             up = Vector3f(0.0f, 1.0f, 0.0f);
-		}
-		else if (view == "side") {
-			view = "top";
+        }
+        else if (view == "side") {
+            view = "top";
 
+			// Top View
             eye = Vector3f(groundLength / 2, 10.0f, groundWidth / 2);
             center = Vector3f(groundLength / 2, 0.0f, groundWidth / 2);
             up = Vector3f(0.0f, 0.0f, -1.0f);
-		}
+        }
         else if (view == "top") {
-			view = "front";
+            view = "third-person";
 
+			// Third-person View
+            eye = Vector3f(playerX, playerY + thirdPersonCameraHeightOffset, playerZ + thirdPersonCameraDistanceOffset);
+            center = Vector3f(playerX, playerY, playerZ);
+            up = Vector3f(0.0f, 1.0f, 0.0f);
+        }
+        else if (view == "third-person") {
+            view = "front";
+
+			// Front View
             eye = Vector3f(groundLength / 2, 3.0f, 2.0f * groundWidth);
             center = Vector3f(groundLength / 2, 0.0f, groundWidth / 2);
             up = Vector3f(0.0f, 1.0f, 0.0f);
-		}
-	}
+        }
+    }
+
 };
 
 Camera camera;
@@ -330,6 +345,14 @@ void drawPlayer(float x, float y, float z) {
 }
 
 
+void updateCamera() {
+    if (camera.view == "third-person") {
+        // Continuously update camera position to follow player
+        camera.eye = Vector3f(playerX, playerY + thirdPersonCameraHeightOffset, playerZ + thirdPersonCameraDistanceOffset);
+        camera.center = Vector3f(playerX, playerY, playerZ);
+        camera.up = Vector3f(0.0f, 1.0f, 0.0f);
+    }
+}
 
 void Display() {
     setupCamera();
@@ -340,13 +363,7 @@ void Display() {
     drawWalls();
 	drawPlayer(playerX, playerY, playerZ);
 	drawGridlines();
-
-    //// Adjust the camera to follow the skier if not in free-cam mode
-    //if (view != "free") {
-    //    camera.eye = Vector3f(skierPosition.x, skierPosition.y + 0.5f, skierPosition.z + 1.5f);
-    //    camera.center = skierPosition;
-    //    camera.look();
-    //}
+	updateCamera();
 
     glFlush();
 }
