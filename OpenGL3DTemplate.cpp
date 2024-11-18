@@ -536,50 +536,214 @@ void drawPlayer() {
 void drawClubHouse(float x, float y, float z) {
     // Move the entire clubhouse to the specified position (x, y, z)
     glPushMatrix();
+
+    glScalef(0.6f, 0.6f, 0.6f);  // Scaling factor to reduce size
     glTranslatef(x, y, z);  // Position the clubhouse
 
     // 1. Draw the walls of the clubhouse (a large cube representing the building)
     glPushMatrix();
-    glColor3f(0.8f, 0.8f, 0.8f);  // Light gray for the walls
+    glColor3f(0.0f, 0.0f, 1.0f);  // Light gray for the walls
     glutSolidCube(3.0f);  // Cube representing the building
     glPopMatrix();
 
     // 2. Draw the roof of the clubhouse (a cone on top of the walls)
     glPushMatrix();
     glTranslatef(0.0f, 1.5f, 0.0f);  // Move up above the walls
+    glRotatef(270.0f, 1.0f, 0.0f, 0.0f);  // Rotate the cone 180 degrees around the X-axis
     glColor3f(0.6f, 0.3f, 0.0f);  // Brown color for the roof
-    glutSolidCone(2.0f, 2.5f, 10, 10);  // Cone representing the roof
+    glutSolidCone(1.5f, 2.5f, 100, 10);  // Cone representing the roof
     glPopMatrix();
 
     // 3. Draw the door (a small rectangle in the front)
     glPushMatrix();
-    glTranslatef(0.0f, -0.5f, 1.6f);  // Position it slightly above the ground and at the center
-    glColor3f(0.5f, 0.25f, 0.0f);  // Dark brown color for the door
+    glTranslatef(0.0f, -0.7f, 1.45f);  // Position it slightly above the ground and at the center
+    glColor3f(0.8235f, 0.7059f, 0.5490f);
+    glScalef(1.0f, 1.5f, 0.2f);
     glutSolidCube(1.0f);  // Cube representing the door
     glPopMatrix();
 
-    // 4. Draw the windows (two small squares on the sides of the building)
+    // 4. Draw the windows (four small squares on the sides of the building)
     glPushMatrix();
-    glTranslatef(-1.5f, 0.5f, 1.6f);  // Left window
-    glColor3f(0.7f, 0.7f, 1.0f);  // Light blue for the window
-    glutSolidCube(0.6f);  // Cube representing the window
+    glTranslatef(0.8f, 0.5f, 1.4f);  // Left window
+    glColor3f(1.0f, 1.0f, 1.0f);  // Light blue for the window
+    glutSolidCube(0.3f);  // Cube representing the window
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(1.5f, 0.5f, 1.6f);  // Right window
-    glColor3f(0.7f, 0.7f, 1.0f);  // Light blue for the window
-    glutSolidCube(0.6f);  // Cube representing the window
+    glTranslatef(1.2f, 0.5f, 1.4f);  // Right window
+    glColor3f(1.0f, 1.0f, 1.0f);  // Light blue for the window
+    glutSolidCube(0.3f);  // Cube representing the window
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.8f, 0.9f, 1.4f);  // Right window
+    glColor3f(1.0f, 1.0f, 1.0f);  // Light blue for the window
+    glutSolidCube(0.3f);  // Cube representing the window
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(1.2f, 0.9f, 1.4f);  // Right window
+    glColor3f(1.0f, 1.0f, 1.0f);  // Light blue for the window
+    glutSolidCube(0.3f);  // Cube representing the window
     glPopMatrix();
 
     // 5. Draw the chimney (a small cylinder on the roof)
     glPushMatrix();
-    glTranslatef(0.0f, 2.5f, -1.0f);  // Position the chimney above the roof
+    glTranslatef(1.2f, 2.5f, 1.2f);  // Position the chimney above the 
+    glRotatef(90.0f, 1.0f, 0.0f, 0.0f);  // Rotate the cone 180 degrees around the X-axis
     glColor3f(0.5f, 0.5f, 0.5f);  // Gray color for the chimney
     drawCylinder(0.3f, 1.0f, 10, 10);  // Cylinder representing the chimney
     glPopMatrix();
 
     // Pop the transformation matrix
     glPopMatrix();
+}
+
+void drawGolfCart(float x, float y, float z) {
+    glPushMatrix();
+    glTranslatef(x, y, z);  // Position the golf cart at (x, y, z)
+    glRotatef(90.0, 0.0f, 1.0f, 0.0f);
+
+    // 1. Draw the cart body (a rectangular shape for the cart)
+    glPushMatrix();
+    glTranslatef(0.0f, 0.3f, 0.0f);  // Position the body slightly above the ground
+    glColor3f(1.0f, 0.0f, 0.0f);  // Green color for the cart body
+    glScalef(2.0f, 0.5f, 1.0f);  // Scale to make a long, flat body
+    glutSolidCube(1.0f);  // Cube representing the body of the cart
+    glPopMatrix();
+
+    // 2. Draw the roof (a flat rectangle above the cart, higher than before)
+    glPushMatrix();
+    glTranslatef(0.0f, 1.3f, 0.0f);  // Position the roof higher above the cart body
+    glColor3f(0.8f, 0.8f, 0.8f);  // Light gray color for the roof
+    glScalef(2.0f, 0.2f, 1.0f);  // Scale to make a flat roof
+    glutSolidCube(1.0f);  // Cube representing the roof
+    glPopMatrix();
+
+
+	float wheelHeightOffset = -0.1f;  // Height offset for the wheels
+    // 3. Draw the wheels (using cylinders for the wheels)
+    glPushMatrix();
+    glTranslatef(-0.8f, wheelHeightOffset, 0.4f);  // Position the back-right wheel
+    glColor3f(0.2f, 0.2f, 0.2f);  // Dark color for the wheels
+    drawCylinder(0.2f, 0.1f, 100, 10);  // Wheel 1
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.8f, wheelHeightOffset, 0.4f);  // Position the front-right wheel
+    glColor3f(0.2f, 0.2f, 0.2f);  // Dark color for the wheels
+    drawCylinder(0.2f, 0.1f, 100, 10);  // Wheel 2
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-0.8f, wheelHeightOffset, -0.5f);  // Position the back-left wheel
+    glColor3f(0.2f, 0.2f, 0.2f);  // Dark color for the wheels
+    drawCylinder(0.2f, 0.1f, 100, 10);  // Wheel 3
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.8f, wheelHeightOffset, -0.5f);  // Position the front-left wheel
+    glColor3f(0.2f, 0.2f, 0.2f);  // Dark color for the wheels
+    drawCylinder(0.2f, 0.1f, 100, 10);  // Wheel 4
+    glPopMatrix();
+
+    // 4. Draw the seat (a simple rectangle on top of the cart body)
+    glPushMatrix();
+    glTranslatef(0.5f, 0.6f, 0.0f);  // Position the seat above the cart body
+    glColor3f(0.6f, 0.3f, 0.0f);  // Brown color for the seat
+    glScalef(0.4f, 0.2f, 0.8f);  // Scale to make a flat seat
+    glutSolidCube(1.0f);  // Cube representing the seat
+    glPopMatrix();
+
+    // 5. Draw the steering wheel (a simple circle on top of the cart)
+    glPushMatrix();
+    glTranslatef(-1.0f, 0.5f, 0.0f);  // Position the steering wheel at the front
+    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);  // Rotate the beam to stand vertically
+    glColor3f(0.0f, 0.0f, 0.0f);  // Black color for the steering wheel
+    glutSolidTorus(0.1f, 0.15f, 10, 10);  // Steering wheel represented as a torus
+    glPopMatrix();
+
+// 6. Draw the support beams (cylinders between the roof and body)
+// First left beam (Positioned at the front-left
+	float beamHeight = 0.8f;  // Height of the support beams
+    float beamTranslationOffset = 1.3f;
+    glPushMatrix();
+    glTranslatef(-0.8f, beamTranslationOffset, 0.45f);  // Position the first left support beam (closer to the front of the cart)
+    glRotatef(90.0f, 1.0f, 0.0f, 0.0f);  // Rotate the beam to stand vertically
+    glColor3f(0.6f, 0.3f, 0.0f);  // Brown color for the support beams
+    drawCylinder(0.05f, beamHeight, 10, 10);  // First left support beam, longer (height = 0.5)
+    glPopMatrix();
+
+    // Second left beam (Positioned at the back-left)
+    glPushMatrix();
+    glTranslatef(-0.8f, beamTranslationOffset, -0.45f);  // Position the second left support beam (closer to the back of the cart)
+    glRotatef(90.0f, 1.0f, 0.0f, 0.0f);  // Rotate the beam to stand vertically
+    glColor3f(0.6f, 0.3f, 0.0f);  // Brown color for the support beams
+    drawCylinder(0.05f, beamHeight, 10, 10);  // Second left support beam, longer (height = 0.5)
+    glPopMatrix();
+
+    // Right beams
+    // First right beam (Positioned at the front-right)
+    glPushMatrix();
+    glTranslatef(0.8f, beamTranslationOffset, 0.45f);  // Position the first right support beam (closer to the front of the cart)
+    glRotatef(90.0f, 1.0f, 0.0f, 0.0f);  // Rotate the beam to stand vertically
+    glColor3f(0.6f, 0.3f, 0.0f);  // Brown color for the support beams
+    drawCylinder(0.05f, beamHeight, 10, 10);  // First right support beam, longer (height = 0.5)
+    glPopMatrix();
+
+    // Second right beam (Positioned at the back-right)
+    glPushMatrix();
+    glTranslatef(0.8f, beamTranslationOffset, -0.45f);  // Position the second right support beam (closer to the back of the cart)
+    glRotatef(90.0f, 1.0f, 0.0f, 0.0f);  // Rotate the beam to stand vertically
+    glColor3f(0.6f, 0.3f, 0.0f);  // Brown color for the support beams
+    drawCylinder(0.05f, beamHeight, 10, 10);  // Second right support beam, longer (height = 0.5)
+    glPopMatrix();
+
+
+    glPopMatrix();  // Pop the transformation matrix for the entire golf cart
+}
+
+void drawFlagPole(float x, float y, float z) {
+    // Move the entire flagpole to the specified position (x, y, z)
+    glPushMatrix();
+    glTranslatef(x, y, z);  // Position the flagpole
+
+    // 1. Draw the base of the flagpole (a short cylinder)
+    glPushMatrix();
+    glColor3f(0.3f, 0.3f, 0.3f);  // Gray color for the base
+    glTranslatef(0.0f, 0.15f, 0.0f);
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);  // Rotate cylinder upright
+    drawCylinder(0.1f, 0.05f, 20, 20);  // Base cylinder
+    glPopMatrix();
+
+    // 2. Draw the pole (a tall cylinder)
+    glPushMatrix();
+    glColor3f(0.8f, 0.8f, 0.8f);  // Light gray for the pole
+    glTranslatef(0.0f, 0.2f, 0.0f);  // Raise the pole above the base
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);  // Rotate cylinder upright
+    drawCylinder(0.05f, 3.0f, 20, 20);  // Pole cylinder
+    glPopMatrix();
+
+    // 3. Draw the hole near the top (a torus/ring)
+    glPushMatrix();
+    glColor3f(0.0f, 0.0f, 0.0f);  // Black color for the hole
+    glTranslatef(0.0f, 2.9f, 0.0f);  // Position near the top of the pole
+    glRotatef(90.0f, 1.0f, 0.0f, 0.0f);  // Rotate torus to align with the pole
+    glutSolidTorus(0.05f, 0.15f, 20, 20);  // Torus for the hole
+    glPopMatrix();
+
+    // 4. Draw the flag (a flat rectangle using triangles)
+    glPushMatrix();
+    glColor3f(1.0f, 0.0f, 0.0f);  // Red color for the flag
+    glTranslatef(0.15f, 2.9f, 0.0f);  // Position flag slightly below the hole
+    glBegin(GL_TRIANGLES);
+    glVertex3f(0.0f, 0.2f, 0.0f);  // Top corner
+    glVertex3f(0.0f, -0.2f, 0.0f); // Bottom corner
+    glVertex3f(0.4f, 0.0f, 0.0f);  // End corner
+    glEnd();
+    glPopMatrix();
+
+    glPopMatrix();  // Pop the flagpole transformation
 }
 
 
@@ -612,6 +776,8 @@ void handleCollisions() {
     }
 }
 
+
+
 void Display() {
     setupCamera();
     setupLights();
@@ -620,7 +786,9 @@ void Display() {
     
     drawWalls();
 	drawFences(groundLength, groundWidth);
-	//drawClubHouse(5.0f, 0.0f, 5.0f);
+	drawClubHouse(1.7f, 1.5f, 1.5f);
+    drawGolfCart(9.2f, 0.35f, 1.4f);
+    drawFlagPole(6.5f, -0.16f, 4.5f);
 	drawGridlines();
 
 	drawPlayer();
