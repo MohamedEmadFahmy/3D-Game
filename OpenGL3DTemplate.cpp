@@ -35,7 +35,6 @@ float playerAngle = 0.0f;
 
 // Golf Balls Global Variables
 
-int ballsLeftCount;
 
 // Ball Color
 float ballColor[3] = { 1.0f, 1.0f, 1.0f };  // White color for the golf ball
@@ -95,6 +94,18 @@ struct Ball {
 
 // A list (vector) to hold multiple balls
 std::vector<Ball> balls;
+
+
+// Game Global Variables
+int initialBallsCount;
+int ballsLeftCount;
+float timeLeft;  // Time in seconds
+
+
+
+
+
+
 
 // Add balls to the list
 void createAllBalls() {
@@ -866,36 +877,179 @@ void handleCollisions() {
     }
 }
 
+void displayGameInfo() {
+    // Set the background color for the overlay (light gray background)
+    glColor3f(1.0f, 1.0f, 1.0f);  // Light gray color for the overlay
+
+    // Create a rectangle background to cover the top-left corner for the overlay
+    glBegin(GL_QUADS);
+    glVertex2f(0.0f, screenHeight);  // Top-left corner
+    glVertex2f(screenWidth, screenHeight);  // Top-right corner
+    glVertex2f(screenWidth, screenHeight - 100);  // Bottom-right corner
+    glVertex2f(0.0f, screenHeight - 100);  // Bottom-left corner
+    glEnd();
+
+    // Set the text color to green
+    glColor3f(0.0f, 1.0f, 0.0f); // Green color for the text
+
+    // Create the timer text
+    char timerText[20];
+    sprintf(timerText, "Time: %.1f", timeLeft);
+
+    // Create the goals text
+    char goalsText[20];
+    sprintf(goalsText, "Goals: %d", ballsLeftCount);
+
+    // Set up orthographic projection for 2D overlay
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, screenWidth, 0, screenHeight);  // Set the correct orthographic projection
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();        // Reset the modelview matrix
+
+    // Render timer text at the top-left corner
+    glRasterPos2f(10.0f, screenHeight - 40);
+    for (const char* c = timerText; *c != '\0'; c++) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+    }
+
+    // Render goals text slightly below the timer
+    glRasterPos2f(10.0f, screenHeight - 80);
+    for (const char* c = goalsText; *c != '\0'; c++) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+    }
+
+    // Restore the projection and modelview matrices
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+
+    glFlush();  // Ensure everything is rendered
+}
+
+
+void displayGameWon() {
+    // Set background color for the screen (light green for a winning message)
+    glColor3f(0.2f, 0.8f, 0.2f);  // Light green color
+
+    // Draw a full screen rectangle to indicate the game is won
+    glBegin(GL_QUADS);
+    glVertex2f(0.0f, screenHeight);  // Top-left corner
+    glVertex2f(screenWidth, screenHeight);  // Top-right corner
+    glVertex2f(screenWidth, 0.0f);  // Bottom-right corner
+    glVertex2f(0.0f, 0.0f);  // Bottom-left corner
+    glEnd();
+
+    // Set text color to white
+    glColor3f(1.0f, 1.0f, 1.0f);  // White text for the win message
+
+    // Render "GAME WON" text in the center of the screen
+    const char* wonMessage = "GAME WON!";
+    float textWidth = 0.0f;
+    for (const char* c = wonMessage; *c != '\0'; c++) {
+        textWidth += glutBitmapWidth(GLUT_BITMAP_HELVETICA_18, *c);
+    }
+
+    glRasterPos2f((screenWidth - textWidth) / 2, screenHeight / 2);
+    for (const char* c = wonMessage; *c != '\0'; c++) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+    }
+
+    // Optionally, display the score or additional information
+    char scoreText[20];
+    sprintf(scoreText, "Final Score: %d", initialBallsCount);
+    glRasterPos2f((screenWidth - textWidth) / 2, (screenHeight / 2) - 40);
+    for (const char* c = scoreText; *c != '\0'; c++) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+    }
+
+    glFlush();
+}
+
+void displayGameOver() {
+    // Set background color for the screen (dark red for a game-over message)
+    glColor3f(0.8f, 0.2f, 0.2f);  // Dark red color
+
+    // Draw a full screen rectangle to indicate the game is over
+    glBegin(GL_QUADS);
+    glVertex2f(0.0f, screenHeight);  // Top-left corner
+    glVertex2f(screenWidth, screenHeight);  // Top-right corner
+    glVertex2f(screenWidth, 0.0f);  // Bottom-right corner
+    glVertex2f(0.0f, 0.0f);  // Bottom-left corner
+    glEnd();
+
+    // Set text color to white
+    glColor3f(1.0f, 1.0f, 1.0f);  // White text for the game-over message
+
+    // Render "GAME OVER" text in the center of the screen
+    const char* gameOverMessage = "GAME OVER";
+    float textWidth = 0.0f;
+    for (const char* c = gameOverMessage; *c != '\0'; c++) {
+        textWidth += glutBitmapWidth(GLUT_BITMAP_HELVETICA_18, *c);
+    }
+
+    glRasterPos2f((screenWidth - textWidth) / 2, screenHeight / 2);
+    for (const char* c = gameOverMessage; *c != '\0'; c++) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+    }
+
+    // Optionally, display the score or additional information
+    char scoreText[20];
+    sprintf(scoreText, "Balls Left: %d", ballsLeftCount);
+    glRasterPos2f((screenWidth - textWidth) / 2, (screenHeight / 2) - 40);
+    for (const char* c = scoreText; *c != '\0'; c++) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+    }
+
+    glFlush();
+}
 
 
 void Display() {
-    setupCamera();
-    setupLights();
+    if (timeLeft <= 0.0f) {
+        if (ballsLeftCount == 0) {
+			displayGameWon();
+        }
+        else {
+			displayGameOver();
+        }
+    }
+    else {
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    drawWalls();
-	drawFences(groundLength, groundWidth);
-	drawClubHouse(1.7f, 1.5f, 1.5f);
-    drawGolfCart(9.2f, 0.35f, 1.4f);
-    drawFlagPole(6.5f, -0.16f, 4.5f);
-    drawSandpit(9.0f, 0.0f, 9.0f);
+        setupCamera();
+        setupLights();
 
-    // Rock Groups
-    drawRockGroup(1.0f, 0.0f, 6.0f);
-	drawRockGroup(2.0f, 0.0f, 9.0f);
-	drawRockGroup(9.0f, 0.0f, 6.0f);
-	drawRockGroup(6.0f, 0.0f, 9.5f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawWalls();
+        drawFences(groundLength, groundWidth);
+        drawClubHouse(1.7f, 1.5f, 1.5f);
+        drawGolfCart(9.2f, 0.35f, 1.4f);
+        drawFlagPole(6.5f, -0.16f, 4.5f);
+        drawSandpit(9.0f, 0.0f, 9.0f);
+
+        // Rock Groups
+        drawRockGroup(1.0f, 0.0f, 6.0f);
+        drawRockGroup(2.0f, 0.0f, 9.0f);
+        drawRockGroup(9.0f, 0.0f, 6.0f);
+        drawRockGroup(6.0f, 0.0f, 9.5f);
 
 
-	drawGridlines();
+        drawGridlines();
 
-	drawPlayer();
-	updateCamera();
+        drawPlayer();
+        updateCamera();
 
-    handleCollisions();
+        handleCollisions();
 
-	drawAllBalls();
+        drawAllBalls();
+
+        displayGameInfo();
+       
+    }
 
     glFlush();
 }
@@ -1041,7 +1195,9 @@ void MouseMotion(int x, int z) {
 
 void initGame() {
 	createAllBalls();
-	ballsLeftCount = balls.size();
+	initialBallsCount = balls.size();
+    ballsLeftCount = balls.size();
+	timeLeft = 60.0f;
 }
 
 void main(int argc, char** argv) {
