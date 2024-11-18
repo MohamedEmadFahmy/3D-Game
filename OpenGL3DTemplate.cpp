@@ -35,6 +35,8 @@ float playerAngle = 0.0f;
 
 // Golf Balls Global Variables
 
+int ballsLeftCount;
+
 // Ball Color
 float ballColor[3] = { 1.0f, 1.0f, 1.0f };  // White color for the golf ball
 
@@ -96,10 +98,11 @@ std::vector<Ball> balls;
 
 // Add balls to the list
 void createAllBalls() {
-    balls.push_back(Ball(2.0f, 2.0f));  
+    balls.push_back(Ball(2.0f, 6.0f));
     balls.push_back(Ball(4.0f, 4.0f));  
-    balls.push_back(Ball(4.0f, 4.0f));
+    balls.push_back(Ball(4.0f, 9.0f));
     balls.push_back(Ball(6.0f, 6.0f));
+    balls.push_back(Ball(7.0f, 2.0f));
     balls.push_back(Ball(8.0f, 8.0f));
 }
 
@@ -746,6 +749,93 @@ void drawFlagPole(float x, float y, float z) {
     glPopMatrix();  // Pop the flagpole transformation
 }
 
+void drawSandpit(float x, float y, float z) {
+    // Move the entire sandpit to the specified position (x, y, z)
+    glPushMatrix();
+    glTranslatef(x, y, z);  // Position the sandpit
+    glScalef(0.3f, 0.3f, 0.3f);  // Scaling factor to reduce size
+
+    // 1. Draw the base of the sandpit (a short cylinder)
+    glPushMatrix();
+    glColor3f(0.0f, 0.0f, 0.0f);  // Sand color for the base
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);  // Rotate cylinder to lie flat
+    drawCylinder(3.0f, 0.3f, 50, 10);  // Cylinder as the sandpit base
+    glPopMatrix();
+
+    
+    glPushMatrix();
+    glColor3f(1.0f, 0.70f, 0.15f);  // Light sand color
+    glTranslatef(0.0f, 0.22f, 0.0f);  // Raise slightly above the base
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);  // Align with the ground
+    drawCylinder(3.1f, 0.15f, 50, 10);  // Slightly larger cylinder for the border
+    glPopMatrix();
+    
+
+    // Oval pebbles with more spaced-out positions
+    float positions[10][2] = {
+        {-1.0f, -1.0f},
+        {1.2f, 0.8f},
+        {-1.5f, 1.3f},
+        {0.8f, -1.2f},
+        {-1.8f, 0.5f},
+        {1.5f, -0.5f},
+        {-0.8f, 1.5f},
+        {0.3f, 1.8f},
+        {1.7f, 1.2f},
+        {-1.2f, -1.8f}
+    };
+
+    for (int i = 0; i < 10; i++) {
+        glPushMatrix();
+        glTranslatef(positions[i][0], 0.4f, positions[i][1]);
+        glScalef(1.5f, 0.5f, 1.0f);  // Non-uniform scaling to create oval shapes
+        glColor3f(0.75f, 0.75f, 0.75f);  // Silver color for the pebbles
+        glutSolidSphere(0.2f, 20, 20);  // Spherical pebble
+        glPopMatrix();
+    }
+
+    glPopMatrix();  // Pop the sandpit transformation
+}
+
+void drawRockGroup(float x, float y, float z) {
+    glPushMatrix();
+    glTranslatef(x, y, z);  // Move the group of rocks to the specified position
+    glScalef(0.3, 0.3, 0.3);
+
+    // 1. Draw a larger base rock using a scaled sphere
+    glPushMatrix();
+    glColor3f(0.5f, 0.5f, 0.5f);  // Gray color for the rock
+    glScalef(1.5f, 0.5f, 1.0f);  // Scale the sphere to make it more flattened
+    glutSolidSphere(0.5f, 20, 20);  // Base of the rock group
+    glPopMatrix();
+
+    // 2. Draw smaller pebbles as spheres scattered around the base
+    float pebblePositions[5][2] = {
+        {-0.5f, 0.3f},
+        {0.6f, -0.2f},
+        {-0.2f, -0.5f},
+        {0.4f, 0.7f},
+        {-0.8f, 0.4f}
+    };
+
+    for (int i = 0; i < 5; i++) {
+        glPushMatrix();
+        glTranslatef(pebblePositions[i][0], 0.1f, pebblePositions[i][1]);
+        glColor3f(0.7f, 0.7f, 0.7f);  // Light gray color for the pebbles
+        glutSolidSphere(0.2f, 10, 10);  // Smaller pebble sphere
+        glPopMatrix();
+    }
+
+    // 3. Draw a slightly larger pebble using another sphere, more centralized
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, 0.0f);  // Position it in the center
+    glColor3f(0.6f, 0.6f, 0.6f);  // Slightly darker gray for variation
+    glutSolidSphere(0.3f, 15, 15);  // Central larger pebble
+    glPopMatrix();
+
+    glPopMatrix();  // Pop the transformation matrix
+}
+
 
 void updateCamera() {
     if (camera.view == "third-person") {
@@ -789,6 +879,15 @@ void Display() {
 	drawClubHouse(1.7f, 1.5f, 1.5f);
     drawGolfCart(9.2f, 0.35f, 1.4f);
     drawFlagPole(6.5f, -0.16f, 4.5f);
+    drawSandpit(9.0f, 0.0f, 9.0f);
+
+    // Rock Groups
+    drawRockGroup(1.0f, 0.0f, 6.0f);
+	drawRockGroup(2.0f, 0.0f, 9.0f);
+	drawRockGroup(9.0f, 0.0f, 6.0f);
+	drawRockGroup(6.0f, 0.0f, 9.5f);
+
+
 	drawGridlines();
 
 	drawPlayer();
@@ -942,7 +1041,7 @@ void MouseMotion(int x, int z) {
 
 void initGame() {
 	createAllBalls();
-
+	ballsLeftCount = balls.size();
 }
 
 void main(int argc, char** argv) {
